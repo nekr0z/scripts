@@ -7,6 +7,18 @@ move=
 dry=
 recursive=
 
+usage() {
+	echo "File organizer"
+	echo "usage: organizer.sh [[-c|-m] [-o|-n] [-d] [-r] [-f source] [-t destination] | [-h]]"
+	echo "	Copies (-c) or moves (-m) files from source to destination, creating /year/month/ folder structure at destination and overwriting (-o) or keeping (-n) files that exist there."
+	echo "	Can work recursively (-r) or in dry run mode (-d)."
+	echo "	Defaults are:"
+	echo "		-c -n -f ./ -t ./"
+	echo "	i.e. copying and not overwriting to current directory".
+	echo "	-h gives this information."
+	echo "	If mutually exclusive options (-n and -o or -c and -m) are given, the last one takes precedence."
+}
+
 while [ "$1" != "" ]; do
 	case $1 in
 		-c )	move=
@@ -23,12 +35,15 @@ while [ "$1" != "" ]; do
 		-t )	shift
 			destdir=$1
 			;;
-			# TODO add usage
+		-h )	usage
+			exit
+			;;
 		-d )	dry=1
 			;;
 		-r )	recursive=1
 			;;
-		* )	exit 1
+		* )	usage
+			exit 1
 	esac
 	shift
 done
