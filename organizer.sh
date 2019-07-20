@@ -5,6 +5,7 @@ destdir=$(pwd)
 overwrite=
 move=
 dry=
+recursive=
 
 while [ "$1" != "" ]; do
 	case $1 in
@@ -25,11 +26,17 @@ while [ "$1" != "" ]; do
 			# TODO add usage
 		-d )	dry=1
 			;;
+		-r )	recursive=1
+			;;
 		* )	exit 1
 	esac
 	shift
 done
 
+if [ "$recursive" = "1" ] && [ "$sourcedir" -ef "$destdir" ]; then
+	echo "You don't want recursion when source and destination are the same!"
+	exit 1
+fi
 if [ "$move" = "1" ]; then
 	cmd="mv"
 	if [ "$overwrite" = "1" ]; then
@@ -56,15 +63,22 @@ if [ ! -d "$sourcedir" ]; then
 	exit 1
 fi
 
-for x in "$sourcedir"/*; do
-	if [ -f "$x" ]; then
-		d=$(date -r "$x" +%Y/%m)
-		if [ "$dry" = "1" ]; then
-			echo "mkdir -p $destdir/$d"
-			echo "$cmd $arg -- $x $destdir/$d/"
-		else
-			mkdir -p "$destdir"/"$d"
-			"$cmd" "$arg" -- "$x" "$destdir"/"$d"/
+doit() {
+	for x in "$1"/*; do
+		if [ -d "$x" ] && [ "$recursive" = "1" ]; then
+			doit $x
 		fi
-	fi
-done
+		if [ -f "$x" ]; then
+			d=$(date -r "$x" +%Y/%m)
+			if [ "$dry" = "1" ]; then
+				echo "mkdir -p $destdir/$d"
+				echo "$cmd $arg -- $x $destdir/$d/"
+			else
+				mkdir -p "$destdir"/"$d"
+				"$cmd" "$arg" -- "$x" "$destdir"/"$d"/
+			fi
+		fi
+	done
+}
+
+doit $sourcedir
