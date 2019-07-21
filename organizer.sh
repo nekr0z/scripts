@@ -81,7 +81,7 @@ fi
 doit() {
 	for x in "$1"/*; do
 		if [ -d "$x" ] && [ "$recursive" = "1" ]; then
-			doit $x
+			doit "$x"
 		fi
 		if [ -f "$x" ]; then
 			d=$(date -r "$x" +%Y/%m)
@@ -96,4 +96,4 @@ doit() {
 	done
 }
 
-doit $sourcedir
+doit "$sourcedir"
